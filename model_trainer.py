@@ -203,9 +203,9 @@ def create_train_dataset(
                 image_size,
             ),
             output_signature=(
-                tf.TensorSpec(shape=[frame_size[1],frame_size[0],3],
+                tf.TensorSpec(shape=[image_size[1],image_size[0],3],
                               dtype=tf.float32),
-                tf.TensorSpec(shape=[frame_size[1],frame_size[0]],
+                tf.TensorSpec(shape=[image_size[1],image_size[0]],
                               dtype=tf.float32),
             ),
             args=(x,)
@@ -223,26 +223,6 @@ def create_train_dataset(
     dataset = dataset.repeat()
 
     return dataset
-
-
-def get_model(frame_size, model_f, interpolate_ratios, flow_map_size):
-    """
-    simple wrapper around a model (To use keras.Model functional api)
-    
-    Arguments
-    ---------
-    frame_size : tuple of two ints
-        format (W, H)
-    flow_map_size: tuple of two ints
-        format (W, H)
-    """
-    flow_map_size_hw = (flow_map_size[1], flow_map_size[0])
-    inputs = keras.Input((frame_size[1],frame_size[0],6))
-    raw_model = AnimeModel(model_f, interpolate_ratios, flow_map_size_hw)
-    outputs = raw_model(inputs)
-    mymodel = keras.Model(inputs=inputs, outputs=outputs)
-    mymodel.summary()
-    return mymodel
 
 class ValFigCallback(keras.callbacks.Callback):
     def __init__(self, val_ds, logdir):
