@@ -317,14 +317,14 @@ def run_training(
             log_dir=logdir,
             histogram_freq=1,
             profile_batch='3,5',
-            update_freq=steps_per_epoch
+            update_freq='epoch'
         )
     else :
         tensorboard_callback = tf.keras.callbacks.TensorBoard(
             log_dir=logdir,
             histogram_freq=1,
             profile_batch=0,
-            update_freq=steps_per_epoch
+            update_freq='epoch'
         )
 
     lr_callback = keras.callbacks.LearningRateScheduler(lr_f, verbose=1)
