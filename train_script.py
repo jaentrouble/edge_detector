@@ -40,7 +40,7 @@ if args.mem_growth:
 train_data_dir = Path('data/train')
 val_data_dir = Path('data/val')
 
-model_f = getattr(flow_models, args.model)
+model_f = getattr(edge_models, args.model)
 lr_f = getattr(model_lr, args.lr)
 name = args.name
 epochs = int(args.epochs)
