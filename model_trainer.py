@@ -261,11 +261,11 @@ class ValFigCallback(keras.callbacks.Callback):
 
             ax = fig.add_subplot(8,3,3*i+2)
             pred = predict[0]
-            ax.imshow(pred)
+            ax.imshow(pred, cmap='binary')
             
             ax = fig.add_subplot(8,3,3*i+3)
             gt = sample_y[0]
-            ax.imshow(gt)
+            ax.imshow(gt, cmap='binary')
         return fig
 
     def on_epoch_end(self, epoch, logs=None):
