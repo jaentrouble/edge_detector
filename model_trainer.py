@@ -143,7 +143,7 @@ class AugGenerator():
     def __next__(self):
         idx = random.randrange(0,self.image_n)
         distorted = self.aug(
-            image = self.imgaes[idx],
+            image = self.images[idx],
             mask=self.edge_maps[idx],
         )
         X = distorted['image'].astype(np.float32)/255
