@@ -44,7 +44,7 @@ class EdgeModel(keras.Model):
         super().__init__()
         
         self.model_function = model_function
-        self.input_shape = input_shape
+        self.image_shape = input_shape
         
         inputs = keras.Input(input_shape)
         encoded = model_function(inputs)
@@ -65,7 +65,7 @@ class EdgeModel(keras.Model):
     def get_config(self):
         config = super().get_config()
         config['model_function'] = self.model_function
-        config['input_shape'] = self.input_shape
+        config['input_shape'] = self.image_shape
 
 class AugGenerator():
     """An iterable generator that makes data
