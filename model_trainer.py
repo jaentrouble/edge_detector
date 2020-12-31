@@ -15,7 +15,6 @@ import os
 from pathlib import Path
 import cv2
 
-DELTA_MAX = 60
 
 class EdgeModel(keras.Model):
     def __init__(self, input_shape, model_function,):
