@@ -133,3 +133,4 @@ data/
 savedmodels/
 logs/
 video/
+*.exe
