@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from model_trainer_half import run_training
-import flow_models
+from model_trainer import run_training
+import edge_models
 import model_lr
 import argparse
 import tensorflow as tf
@@ -12,12 +12,12 @@ from pathlib import Path
 import random
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-m','--model', dest='model')
-parser.add_argument('-lr', dest='lr')
-parser.add_argument('-n','--name', dest='name')
-parser.add_argument('-e','--epochs', dest='epochs')
-parser.add_argument('-s','--steps', dest='steps', default=0)
-parser.add_argument('-b','--batchsize', dest='batch', default=32)
+parser.add_argument('-m','--model', dest='model', required=True)
+parser.add_argument('-lr', dest='lr', required=True)
+parser.add_argument('-n','--name', dest='name',required=True)
+parser.add_argument('-e','--epochs', dest='epochs', type=int)
+parser.add_argument('-s','--steps', dest='steps', required=True, type=int)
+parser.add_argument('-b','--batchsize', dest='batch', default=32, type=int)
 parser.add_argument('-mf','--mixedfloat', dest='mixed_float', 
                     action='store_true',default=False)
 parser.add_argument('-mg','--memorygrow', dest='mem_growth',
@@ -37,16 +37,8 @@ if args.mem_growth:
         except RuntimeError as e:
             print(e)
 
-vid_dir = Path('data/cut')
-vid_paths = [str(vid_dir/vn) for vn in os.listdir(vid_dir)]
-
-# To make sure data are chosen randomly between data groups
-random.shuffle(vid_paths)
-
-test_num = len(vid_paths) // 10
-train_vid_paths = vid_paths[:-2*test_num]
-val_vid_paths = vid_paths[-2*test_num:-test_num]
-test_vid_paths = vid_paths[-test_num:]
+train_data_dir = Path('data/train')
+val_data_dir = Path('data/val')
 
 model_f = getattr(flow_models, args.model)
 lr_f = getattr(model_lr, args.lr)
@@ -56,8 +48,6 @@ mixed_float = args.mixed_float
 batch_size = int(args.batch)
 profile = args.profile
 steps_per_epoch = int(args.steps)
-if steps_per_epoch <=0:
-    steps_per_epoch = len(train_vid_paths)*50/batch_size
 load_model_path = args.load
 
 kwargs = {}
@@ -67,12 +57,9 @@ kwargs['name'] = name
 kwargs['epochs'] = epochs
 kwargs['batch_size'] = batch_size
 kwargs['steps_per_epoch'] = steps_per_epoch
-kwargs['train_vid_paths'] = train_vid_paths
-kwargs['val_vid_paths'] = val_vid_paths
-kwargs['test_vid_paths'] = val_vid_paths
-kwargs['frame_size'] = (960,540)
-kwargs['flow_map_size'] = (512,288)
-kwargs['interpolate_ratios'] = [0.5]
+kwargs['train_data_dir'] = train_data_dir
+kwargs['val_data_dir'] = val_data_dir
+kwargs['image_size'] = (320,320)
 kwargs['mixed_float'] = mixed_float
 kwargs['notebook'] = False
 kwargs['profile'] = profile
