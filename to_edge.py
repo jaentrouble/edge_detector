@@ -32,7 +32,7 @@ policy = mixed_precision.Policy('mixed_float16')
 mixed_precision.set_global_policy(policy)
 
 patch_size = (320,320)
-overlap = 30
+overlap = 20
 model_f = ehrb0_112_12
 weight_dir = args.weight
 input_shape = [patch_size[1],patch_size[0],3]
