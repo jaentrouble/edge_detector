@@ -96,7 +96,7 @@ for vid_name in tqdm(vid_names, unit='videos'):
             patches = frame_to_patch(f, patch_size, overlap)
             edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
             edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
-            edge_f_uint8 = np.round((edge_f>0.5)*[255,255,255])\
+            edge_f_uint8 = np.round(edge_f*[255,255,255])\
                             .astype(np.uint8)
             writer.stdin.write(edge_f_uint8.tobytes())
 
