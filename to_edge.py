@@ -10,10 +10,12 @@ import argparse
 import os
 from tools.stitch import *
 import subprocess
+import ffmpeg
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-w','--weight', dest='weight',required=True)
-parser.add_argument('-n','--name', dest='name',required=True)
+parser.add_argument('-f','--framerate', dest='framerate',default=60,type=int)
+parser.add_argument('-vb','--videobitrate',dest='video_bitrate',default='30M',)
 parser.add_argument('-i','--input',dest='input',required=True)
 parser.add_argument('-o', '--output',dest='output', required=True)
 args = parser.parse_args()
@@ -48,15 +50,22 @@ vid_names = os.listdir(vid_dir)
 for vid_name in vid_names:
     print(f'{vid_name} start')
     cap = cv2.VideoCapture(str(vid_dir/vid_name))
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     ret, frame = cap.read()
+
     frame_size = (frame.shape[1],frame.shape[0])
     frame_size_hw = (frame_size[1],frame_size[0])
-    writer = cv2.VideoWriter(
-        str(edge_dir/f'{os.path.splitext(vid_name)[0]}_edge_{args.name}.mp4'),
-        fourcc,
-        24,
-        frame_size
+
+    writer = (
+        ffmpeg
+        .input('pipe:', format='rawvideo', pix_fmt='rgb24',
+                s=f'{frame_size[0]}x{frame_size[1]}',
+                loglevel='panic',framerate=args.framerate)
+        .output(str(edge_dir/f'{os.path.splitext(vid_name)[0]}.mp4'),
+                pix_fmt='yuv420p',
+                video_bitrate=args.video_bitrate,
+                vcodec='h264_nvenc',)
+        .overwrite_output()
+        .run_async(pipe_stdin=True)
     )
 
     print('Counting frames...')
@@ -79,25 +88,34 @@ for vid_name in vid_names:
     )
     print(f'Total {nb_original_frames} frames')
     t = tqdm(unit='frames',total=nb_original_frames,
-             desc=f'Processing {vid_name}', leave=False)
+             desc=f'Loading {vid_name}', leave=False)
 
+    frames = []
     while cap.isOpened():
         if ret:
-            f = frame.astype(np.float32) / 255.0
-            patches = frame_to_patch(f, patch_size, overlap)
-            edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
-            edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
-            edge_f_uint8 = np.round(edge_f*[255,255,255])\
-                            .astype(np.uint8)
-            writer.write(edge_f_uint8)
+            frames.append(frame)
 
         else:
             break
 
         ret, frame = cap.read()
         t.update()
-
     t.close()
     cap.release()
-    writer.release()
+
+    edge_frames = []
+    for frame in tqdm(frames, desc=f'converting {vidname}',
+                      leave=False):
+        f = frame.astype(np.float32) / 255.0
+        patches = frame_to_patch(f, patch_size, overlap)
+        edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
+        edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
+        edge_f_uint8 = np.round(edge_f*[255,255,255])\
+                        .astype(np.uint8)
+        edge_frames.append(edge_f_uint8)
+    
+    for ef in tqdm(edge_frames,desc=f'writing {vidname}',leave=False):
+        writer.stdin.write(ef.tobytes())
+
+    writer.stdin.close()
     print(f'{vid_name} end')
