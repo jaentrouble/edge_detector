@@ -15,6 +15,7 @@ import ffmpeg
 parser = argparse.ArgumentParser()
 parser.add_argument('-w','--weight', dest='weight',required=True)
 parser.add_argument('-f','--framerate', dest='framerate',default=60,type=int)
+parser.add_argument('-b','--batch',dest='batch_size',default=1,type=int)
 parser.add_argument('-vb','--videobitrate',dest='video_bitrate',default='30M',)
 parser.add_argument('-i','--input',dest='input',required=True)
 parser.add_argument('-o', '--output',dest='output', required=True)
@@ -91,20 +92,32 @@ for vid_name in vid_names:
              desc=f'Converting {vid_name}', leave=False)
 
     while cap.isOpened():
+        frame_batch = []
         if ret:
-            f = frame.astype(np.float32) / 255.0
-            patches = frame_to_patch(f, patch_size, overlap)
+            for i in range(args.batch_size):
+                if ret:
+                    f = frame.astype(np.float32) / 255.0
+                    frame_batch.append(f)
+                else: 
+                    break
+                ret, frame = cap.read()
+            patches = frame_to_patch_on_batch(
+                np.array(frame_batch), patch_size, overlap
+            )
             edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
-            edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
+            edge_f = patch_to_frame_on_batch(
+                edge_patches, frame_size_hw, overlap
+            )
             edge_f_uint8 = np.round(edge_f*[255,255,255])\
                             .astype(np.uint8)
-            writer.stdin.write(edge_f_uint8.tobytes())
+            for ef in edge_f_uint8:
+                writer.stdin.write(ef.tobytes())
 
         else:
             break
 
-        ret, frame = cap.read()
-        t.update()
+        
+        t.update(n=len(frame_batch))
     t.close()
     cap.release()
     writer.stdin.close()
