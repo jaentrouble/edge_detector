@@ -88,12 +88,17 @@ for vid_name in vid_names:
     )
     print(f'Total {nb_original_frames} frames')
     t = tqdm(unit='frames',total=nb_original_frames,
-             desc=f'Loading {vid_name}', leave=False)
+             desc=f'Converting {vid_name}', leave=False)
 
-    frames = []
     while cap.isOpened():
         if ret:
-            frames.append(frame)
+            f = frame.astype(np.float32) / 255.0
+            patches = frame_to_patch(f, patch_size, overlap)
+            edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
+            edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
+            edge_f_uint8 = np.round(edge_f*[255,255,255])\
+                            .astype(np.uint8)
+            writer.stdin.write(edge_f_uint8.tobytes())
 
         else:
             break
@@ -102,20 +107,5 @@ for vid_name in vid_names:
         t.update()
     t.close()
     cap.release()
-
-    edge_frames = []
-    for frame in tqdm(frames, desc=f'converting {vid_name}',
-                      leave=False):
-        f = frame.astype(np.float32) / 255.0
-        patches = frame_to_patch(f, patch_size, overlap)
-        edge_patches = edge_model.predict_on_batch(patches)[...,np.newaxis]
-        edge_f = patch_to_frame(edge_patches, frame_size_hw, overlap)
-        edge_f_uint8 = np.round(edge_f*[255,255,255])\
-                        .astype(np.uint8)
-        edge_frames.append(edge_f_uint8)
-    
-    for ef in tqdm(edge_frames,desc=f'writing {vidname}',leave=False):
-        writer.stdin.write(ef.tobytes())
-
     writer.stdin.close()
     print(f'{vid_name} end')
