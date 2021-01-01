@@ -48,7 +48,7 @@ vid_dir = Path(args.input)
 edge_dir = Path(args.output)
 vid_names = os.listdir(vid_dir)
 
-for vid_name in vid_names:
+for vid_name in tqdm(vid_names, unit='videos'):
     print(f'{vid_name} start')
     cap = cv2.VideoCapture(str(vid_dir/vid_name))
     ret, frame = cap.read()
