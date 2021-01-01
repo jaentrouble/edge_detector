@@ -14,6 +14,8 @@ import subprocess
 parser = argparse.ArgumentParser()
 parser.add_argument('-w','--weight', dest='weight',required=True)
 parser.add_argument('-n','--name', dest='name',required=True)
+parser.add_argument('-i','--input',dest='input',required=True)
+parser.add_argument('-o', '--output',dest='output', required=True)
 args = parser.parse_args()
 
 
@@ -39,8 +41,8 @@ edge_model.compile(
 )
 edge_model.load_weights(weight_dir)
 
-vid_dir = Path('video/to_convert')
-edge_dir = Path('video')
+vid_dir = Path(args.input)
+edge_dir = Path(args.output)
 vid_names = os.listdir(vid_dir)
 
 for vid_name in vid_names:
@@ -79,7 +81,6 @@ for vid_name in vid_names:
     t = tqdm(unit='frames',total=nb_original_frames,
              desc=f'Processing {vid_name}', leave=False)
 
-    frames = []
     while cap.isOpened():
         if ret:
             f = frame.astype(np.float32) / 255.0
