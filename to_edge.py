@@ -104,7 +104,7 @@ for vid_name in vid_names:
     cap.release()
 
     edge_frames = []
-    for frame in tqdm(frames, desc=f'converting {vidname}',
+    for frame in tqdm(frames, desc=f'converting {vid_name}',
                       leave=False):
         f = frame.astype(np.float32) / 255.0
         patches = frame_to_patch(f, patch_size, overlap)
