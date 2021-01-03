@@ -18,8 +18,12 @@ parser.add_argument('-f','--framerate', dest='framerate',default=60,type=int)
 parser.add_argument('-vb','--videobitrate',dest='video_bitrate',default='30M',)
 parser.add_argument('-i','--input',dest='input',required=True)
 parser.add_argument('-o', '--output',dest='output', required=True)
+parser.add_argument('-n', '--index',dest='index', required=True, type=int)
+parser.add_argument('-p', '--parallel',dest='parallel', required=True,type=int)
 args = parser.parse_args()
 
+assert (args.index >0) and (args.index <= args.parallel), \
+    'index is from 1 to parallel'
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -51,6 +55,16 @@ edge_names = os.listdir(edge_dir)
 if len(edge_names) > 0:
     for e in edge_names:
         vid_names.remove(e)
+        
+vid_names.sort()
+if args.parallel > 1:
+    batch_size = len(vid_names)//args.parallel
+    
+    if args.index == args.parallel:
+        vid_names = vid_names[batch_size*(args.index-1):]
+    else:
+        vid_names = vid_names[batch_size*(args.index-1):batch_size*args.index]
+
 
 for vid_name in tqdm(vid_names, unit='videos'):
     print(f'{vid_name} start')
