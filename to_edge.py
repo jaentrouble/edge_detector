@@ -46,6 +46,11 @@ edge_model.load_weights(weight_dir)
 vid_dir = Path(args.input)
 edge_dir = Path(args.output)
 vid_names = os.listdir(vid_dir)
+edge_names = os.listdir(edge_dir)
+# do not convert already converted videos
+if len(edge_names) > 0:
+    for e in edge_names:
+        vid_names.remove(e)
 
 for vid_name in tqdm(vid_names, unit='videos'):
     print(f'{vid_name} start')
