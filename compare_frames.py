@@ -46,6 +46,7 @@ def compare_framenum(input_path, output_path):
         stdout=subprocess.PIPE, 
         stderr=subprocess.STDOUT).stdout
     )
+    print(str(input_path))
     return nb_input_frames == nb_output_frames
 
 vid_dir = Path(args.input)
