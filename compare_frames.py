@@ -56,7 +56,7 @@ vid_names.sort()
 with Pool(processes=args.parallel) as pool:
     is_same = pool.starmap(compare_framenum, 
                         zip([vid_dir/v for v in vid_names],
-                            [edge_dir/v for v in vid_names])
+                            [edge_dir/v for v in vid_names]))
 
 for v, b in zip(vid_names, is_same):
     if not is_same:
