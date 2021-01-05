@@ -87,14 +87,24 @@ if __name__ == '__main__':
     compare_procs = []
     per_worker = len(vid_names)//args.parallel
     for i in range(args.parallel):
-        compare_procs.append(Process(
-            target=compare_framenum,
-            args=(
-                [vid_dir/vn for vn in vid_names],
-                [edge_dir/vn for vn in vid_names],
-                done_Q,
-            )
-        ))
+        if i == args.parallel -1:
+            compare_procs.append(Process(
+                target=compare_framenum,
+                args=(
+                    [vid_dir/vn for vn in vid_names[i*per_worker:]],
+                    [edge_dir/vn for vn in vid_names[i*per_worker:]],
+                    done_Q,
+                )
+            ))
+        else:
+            compare_procs.append(Process(
+                target=compare_framenum,
+                args=(
+                    [vid_dir/vn for vn in vid_names[i*per_worker:(i+1)*per_worker]],
+                    [edge_dir/vn for vn in vid_names[i*per_worker:(i+1)*per_worker]],
+                    done_Q,
+                )
+            ))
     for p in compare_procs:
         p.start()
         time.sleep(0.5)
