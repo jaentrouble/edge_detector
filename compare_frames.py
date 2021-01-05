@@ -116,5 +116,5 @@ if __name__ == '__main__':
     results = final_Q.get()
     print('Not same vids:')
     for v, b in results:
-        if not is_same:
+        if not b:
             print(v)
