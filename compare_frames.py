@@ -12,7 +12,7 @@ parser.add_argument('-p', '--parallel',dest='parallel', required=True,type=int)
 args = parser.parse_args()
 
 def compare_framenum(input_path, output_path):
-    print(str(input_path))
+    print(str(input_path)+' start')
     nb_input_frames = int(subprocess.run(
         [
             'ffprobe', 
@@ -47,6 +47,7 @@ def compare_framenum(input_path, output_path):
         stdout=subprocess.PIPE, 
         stderr=subprocess.STDOUT).stdout
     )  
+    print(f'{str(input_path)} end : {nb_input_frames == nb_output_frames}')
     return nb_input_frames == nb_output_frames
 
 vid_dir = Path(args.input)
