@@ -5,6 +5,7 @@ from pathlib import Path
 from multiprocessing import Pool, Queue, Process
 from pprint import pprint
 from tqdm import tqdm
+import time
 
 SENTINEL = -1
 
@@ -96,6 +97,7 @@ if __name__ == '__main__':
         ))
     for p in compare_procs:
         p.start()
+        time.sleep(0.5)
     for p in compare_procs:
         p.join()
 
